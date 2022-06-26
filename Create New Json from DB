@@ -1,0 +1,45 @@
+import java.io.File;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+
+import com.fasterxml.jackson.core.exc.StreamWriteException;
+import com.fasterxml.jackson.databind.DatabindException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+public class JsonToJava {
+	public static void main(String[] args)
+			throws ClassNotFoundException, SQLException, StreamWriteException, DatabindException, IOException {
+		Class.forName("com.mysql.cj.jdbc.Driver");// dynamicaaly loaded at runtime, present in the dependeny, be
+		// because this will enebled the driver manager class
+		Connection conn = null;
+		conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/Business", "root", "root");
+		// talks to mysql and passes credentials and crete connection
+
+		// object of statement class will help in creating queries
+		Statement st = conn.createStatement();
+
+		ResultSet rs = st
+				.executeQuery("select * from CustomerInfo where purchasedDate=CURDATE() and Location ='Asia';");
+
+		ArrayList<CourseDetails> al = new ArrayList<CourseDetails>();
+		while (rs.next()) {
+			CourseDetails c = new CourseDetails(); // for every row we need one json
+			c.setAmount(rs.getInt(3));
+			c.setCourseName(rs.getString(1));
+			c.setPurchasedDate(rs.getString(2));
+			c.setLocation(rs.getString(4));
+			al.add(c);
+		}
+		for (int i = 0; i < al.size(); i++) {
+			ObjectMapper obj = new ObjectMapper(); // update project
+			obj.writeValue(new File("C:\\Users\\Aman Arora\\eclipse-workspace\\SDET\\RoadToSdet\\CustomerInfo" + i + ".json"),al.get(i)); // from c object the write value method will read and write in the file
+		}
+		conn.close();
+	}
+
+}
